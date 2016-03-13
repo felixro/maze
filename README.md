@@ -1,0 +1,2 @@
+# maze
+Random maze generation
