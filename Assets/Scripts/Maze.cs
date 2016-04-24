@@ -10,15 +10,31 @@ public class Maze : MonoBehaviour
     public MazeWall[] wallPrefabs;
     public MazeType type;
     public MazeDoor doorPrefab;
+    public MazeRoomSettings[] mazeRoomSettings;
 
     [Range(0f, 1f)]
     public float doorProbability;
-
-    private PlayerController playerInstance;
-
+   
     MazeCell[,] cells;
 
     public float generationStepDelay;
+
+    private PlayerController playerInstance;
+
+    private List<MazeRoom> rooms = new List<MazeRoom>();
+
+    private MazeRoom createRoom(int indexToExclude)
+    {
+        MazeRoom newRoom = ScriptableObject.CreateInstance<MazeRoom>();
+        newRoom.settingsIndex = Random.Range(0, mazeRoomSettings.Length);
+        if (newRoom.settingsIndex == indexToExclude)
+        {
+            newRoom.settingsIndex = (newRoom.settingsIndex + 1) % mazeRoomSettings.Length;
+        }
+        newRoom.mazeRoomSettings = mazeRoomSettings[newRoom.settingsIndex];
+        rooms.Add(newRoom);
+        return newRoom;
+    }
 
     public MazeCell GetCell( IntVector2 coordinates )
     {
@@ -42,7 +58,10 @@ public class Maze : MonoBehaviour
     private void DoFirstGenerationStep( List<MazeCell> activeCells, PlayerController player )
     {
         IntVector2 coordinates = RandomCoordinates;
-        activeCells.Add(CreateCell(coordinates));
+        MazeCell newCell = CreateCell(coordinates);
+        newCell.Initialize(createRoom(-1));
+
+        activeCells.Add(newCell);
         PlayerController playerInstance = Instantiate(player) as PlayerController;
         playerInstance.transform.parent = transform;
         playerInstance.transform.localPosition = 
@@ -117,6 +136,16 @@ public class Maze : MonoBehaviour
     {
         MazePassage prefab = Random.value < doorProbability ? doorPrefab : mazePassage;
         MazePassage passage = Instantiate(prefab) as MazePassage;
+
+        if (passage is MazeDoor)
+        {
+            to.Initialize(createRoom(from.room.settingsIndex));
+        }
+        else
+        {
+            to.Initialize(from.room);
+        }
+
         passage.Initialize(from, to, direction);
         passage = Instantiate(prefab) as MazePassage;
         passage.Initialize(to, from, direction.GetOpposite());
