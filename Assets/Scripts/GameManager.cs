@@ -8,9 +8,9 @@ public class GameManager : MonoBehaviour {
 
     private Maze mazeInstance;
 
-	void Start () 
+	private void Start () 
     {
-        BeginGame();
+        StartCoroutine(BeginGame());
 	}
 	
 	void Update () 
@@ -21,11 +21,10 @@ public class GameManager : MonoBehaviour {
         }
 	}
 
-    private void BeginGame()
+    private IEnumerator BeginGame()
     {
         mazeInstance = Instantiate(maze) as Maze;
-        //mazeInstance.Generate();
-        StartCoroutine(mazeInstance.Generate(player));
+        yield return StartCoroutine(mazeInstance.Generate(player));
     }
 
     private void RestartGame()

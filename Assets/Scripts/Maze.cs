@@ -55,21 +55,22 @@ public class Maze : MonoBehaviour
         }
     }
 
-    private void DoFirstGenerationStep( List<MazeCell> activeCells, PlayerController player )
+    private void DoFirstGenerationStep(List<MazeCell> activeCells, PlayerController player)
     {
         IntVector2 coordinates = RandomCoordinates;
         MazeCell newCell = CreateCell(coordinates);
         newCell.Initialize(createRoom(-1));
 
         activeCells.Add(newCell);
+
         PlayerController playerInstance = Instantiate(player) as PlayerController;
         playerInstance.transform.parent = transform;
-        playerInstance.transform.localPosition = 
+        playerInstance.transform.localPosition =
             new Vector3(
-                coordinates.x - size.x * 0.5f + 0.5f, 
-                1f, 
-                coordinates.z - size.z * 0.5f + 0.5f
-            );
+            coordinates.x - size.x * 0.5f + 0.5f,
+            1f,
+            coordinates.z - size.z * 0.5f + 0.5f
+        );
     }
 
     private void DoNextGenerationStep( List<MazeCell> activeCells )
@@ -110,7 +111,12 @@ public class Maze : MonoBehaviour
                 neighbour = CreateCell(coordinates);
                 CreatePassage(currentCell, neighbour, direction);
                 activeCells.Add(neighbour);
-            }else
+            }
+            else if (currentCell.room.mazeRoomSettings == neighbour.room.mazeRoomSettings)
+            {
+                CreatePassageInSameRoom(currentCell, neighbour, direction);
+            }
+            else
             {
                 CreateWall(currentCell, neighbour, direction);
             }
@@ -132,6 +138,22 @@ public class Maze : MonoBehaviour
         }
     }
 
+    private void CreatePassageInSameRoom(MazeCell from, MazeCell to, MazeDirection direction)
+    {
+        MazePassage passage = Instantiate(mazePassage) as MazePassage;
+        passage.Initialize(from, to, direction);
+        passage = Instantiate(mazePassage) as MazePassage;
+        passage.Initialize(to, from, direction.GetOpposite());
+
+        if (from.room != to.room)
+        {
+            MazeRoom roomToAssimilate = to.room;
+            from.room.Assimilate(roomToAssimilate);
+            rooms.Remove(roomToAssimilate);
+            Destroy(roomToAssimilate);
+        }
+    }
+
     private void CreatePassage(MazeCell from, MazeCell to, MazeDirection direction)
     {
         MazePassage prefab = Random.value < doorProbability ? doorPrefab : mazePassage;
@@ -150,20 +172,6 @@ public class Maze : MonoBehaviour
         passage = Instantiate(prefab) as MazePassage;
         passage.Initialize(to, from, direction.GetOpposite());
     }
-
-    /*
-    public void Generate()
-    {
-        cells = new MazeCell[sizeX, sizeY];
-        for (int x = 0; x < sizeX; x++) 
-        {
-            for (int y = 0; y < sizeY; y++) 
-            {
-                CreateCell(x,y);
-            }
-        }
-    }
-    */
         
     MazeCell CreateCell(IntVector2 coordinates)
     {
