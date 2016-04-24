@@ -9,6 +9,10 @@ public class Maze : MonoBehaviour
     public MazePassage mazePassage;
     public MazeWall[] wallPrefabs;
     public MazeType type;
+    public MazeDoor doorPrefab;
+
+    [Range(0f, 1f)]
+    public float doorProbability;
 
     private PlayerController playerInstance;
 
@@ -111,9 +115,10 @@ public class Maze : MonoBehaviour
 
     private void CreatePassage(MazeCell from, MazeCell to, MazeDirection direction)
     {
-        MazePassage passage = Instantiate(mazePassage) as MazePassage;
+        MazePassage prefab = Random.value < doorProbability ? doorPrefab : mazePassage;
+        MazePassage passage = Instantiate(prefab) as MazePassage;
         passage.Initialize(from, to, direction);
-        passage = Instantiate(mazePassage) as MazePassage;
+        passage = Instantiate(prefab) as MazePassage;
         passage.Initialize(to, from, direction.GetOpposite());
     }
 
