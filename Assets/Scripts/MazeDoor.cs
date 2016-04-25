@@ -5,6 +5,8 @@ public class MazeDoor : MazePassage
 {
     public Transform hinge;
 
+    private bool opened;
+
     private MazeDoor OtherSideOfDoor 
     {
         get 
@@ -31,6 +33,24 @@ public class MazeDoor : MazePassage
             {
                 child.GetComponent<Renderer>().material = cell.room.mazeRoomSettings.wallMaterial;
             }
+        }
+    }
+
+    void OnTriggerEnter(Collider other) 
+    {
+        if (!opened)
+        {
+            Vector3 curPosition = transform.localPosition;
+            Vector3 position1 = new Vector3(curPosition.x+0.5f, curPosition.y, curPosition.z+0.5f);
+            transform.localPosition = position1;
+
+            curPosition = OtherSideOfDoor.transform.localPosition;
+            Vector3 position2 = new Vector3(curPosition.x, curPosition.y, curPosition.z);
+            OtherSideOfDoor.transform.localPosition = position2;
+
+            OtherSideOfDoor.hinge.localRotation = hinge.localRotation = Quaternion.Euler(0f, -90f, 0f);
+
+            opened = true;
         }
     }
 }

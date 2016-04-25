@@ -41,16 +41,14 @@ public class Maze : MonoBehaviour
         return cells[coordinates.x, coordinates.z];
     }
 
-    public IEnumerator Generate (PlayerController player) 
+    public void Generate (PlayerController player) 
     {
-        WaitForSeconds delay = new WaitForSeconds(generationStepDelay);
         cells = new MazeCell[size.x, size.z];
 
         List<MazeCell> activeCells = new List<MazeCell>();
         DoFirstGenerationStep(activeCells, player);
         while ( activeCells.Count > 0 )
         {
-            yield return delay;
             DoNextGenerationStep(activeCells);
         }
     }

@@ -5,12 +5,13 @@ public class GameManager : MonoBehaviour {
 
     public Maze maze;
     public PlayerController player;
+    public Camera mapCamera;
 
     private Maze mazeInstance;
 
 	private void Start () 
     {
-        StartCoroutine(BeginGame());
+        BeginGame();
 	}
 	
 	void Update () 
@@ -21,10 +22,13 @@ public class GameManager : MonoBehaviour {
         }
 	}
 
-    private IEnumerator BeginGame()
+    private void BeginGame()
     {
+        mapCamera.rect = new Rect(0f, 0f, 0.5f, 0.5f);
+        mapCamera.clearFlags = CameraClearFlags.Skybox;
+        mapCamera.clearFlags = CameraClearFlags.Depth;
         mazeInstance = Instantiate(maze) as Maze;
-        yield return StartCoroutine(mazeInstance.Generate(player));
+        mazeInstance.Generate(player);
     }
 
     private void RestartGame()
